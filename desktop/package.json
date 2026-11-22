@@ -1,0 +1,42 @@
+{
+  "name": "slati-pro-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Slati Pro desktop application",
+  "author": "EL.ASSAL ALAE",
+  "main": "main.js",
+  "scripts": {
+    "build:web": "node scripts/export-web.js",
+    "start": "electron .",
+    "dist": "npm run build:web && electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^45.0.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "app.slati.free",
+    "productName": "Slati Pro",
+    "artifactName": "Slati Pro.${ext}",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "web/**/*",
+      "icon.png"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "icon.ico"
+    }
+  }
+}

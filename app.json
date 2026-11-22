@@ -1,0 +1,71 @@
+{
+  "expo": {
+    "name": "Slati Pro",
+    "slug": "slati",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0d1b2a",
+    "icon": "./assets/images/icon.png",
+    "scheme": "slati",
+    "ios": {
+      "bundleIdentifier": "app.slati.free",
+      "buildNumber": "1",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Slati Pro uses your location to calculate prayer times and the Qibla direction.",
+        "NSMotionUsageDescription": "Slati Pro uses motion sensors to show the Qibla compass."
+      }
+    },
+    "android": {
+      "package": "app.slati.free",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#0d1b2a"
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "POST_NOTIFICATIONS",
+        "SCHEDULE_EXACT_ALARM",
+        "USE_EXACT_ALARM",
+        "VIBRATE"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Slati Pro uses your location to calculate prayer times and the Qibla direction."
+        }
+      ],
+      "expo-sensors",
+      "expo-font",
+      "expo-asset",
+      [
+        "expo-notifications",
+        {
+          "color": "#d4af37",
+          "defaultChannel": "prayer-adhan",
+          "sounds": [
+            "./assets/sounds/adhan.mp3",
+            "./assets/sounds/adhan_fajr.mp3"
+          ]
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0d1b2a",
+          "image": "./assets/images/splash.png",
+          "imageWidth": 320,
+          "resizeMode": "contain"
+        }
+      ],
+      "expo-web-browser"
+    ],
+    "web": {
+      "favicon": "./assets/images/favicon.png"
+    }
+  }
+}

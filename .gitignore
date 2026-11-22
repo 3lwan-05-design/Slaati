@@ -1,0 +1,17 @@
+node_modules/
+.expo/
+dist/
+web-build/
+desktop/node_modules/
+desktop/web/
+desktop/release/
+release/
+*.log
+*.apk
+.DS_Store
+android/
+ios/
+$dst/
+*.asar
+*.exe
+*.zip
