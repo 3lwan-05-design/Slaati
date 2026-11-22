@@ -16,6 +16,13 @@
   <img alt="Stack" src="https://img.shields.io/badge/Expo-React%20Native-Electron-6c5ce7?style=flat-square" />
 </p>
 
+## 🎬 Vidéo d'annonce / فيديو تعريفي
+
+<p align="center">
+  <video src="docs/slati-pro-promo.webm" controls width="360"></video><br />
+  <a href="docs/slati-pro-promo.webm">▶ تحميل الفيديو / Download the video</a>
+</p>
+
 ---
 
 ## 📱 شنو كاين فالتطبيق / What's inside
