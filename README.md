@@ -120,6 +120,12 @@ Output: `desktop\release\Slati Pro.exe`
 - المساعد الذكي مجاني بلا مفتاح API، كيستعمل بحثاً على الويب + Pollinations، والرد كيكون بالدارجة. كيحتاج إنترنت، وقد يخطئ — راجع الأمور المهمة مع عالم.
 - الأذان والصور مستخدمين من مصادر حرة (انظر `assets/sounds/ATTRIBUTION.txt` و `assets/fonts/OFL.txt`).
 
+### 📖 مصادر القرآن / Quran sources
+- النص العربي: مصحف بالرسم العثماني محفوظ محلياً داخل التطبيق.
+- الترجمة الإنجليزية: **Saheeh International**؛ والفرنسية: **Muhammad Hamidullah** — محفوظتين محلياً (قراءة بدون إنترنت).
+- التلاوة الصوتية: **مشاري العفاسي** — قارئ واحد لكل السور، عبر CDN ديال QuranCloud — كتحتاج إنترنت للاستماع.
+- المصادر: [QuranCloud API](https://api.alquran.cloud/) / [AlQuran Cloud CDN](https://cdn.islamic.network/).
+
 ---
 
 ## 📁 الهيكل / Project structure

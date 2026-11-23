@@ -13,7 +13,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import ScreenBackground from '../components/ScreenBackground';
 import ThemeToggle from '../components/ThemeToggle';
+import QuranAudioPlayer from '../components/QuranAudioPlayer';
 import quran from '../data/quran.json';
+import quranEn from '../data/quran-en.json';
+import quranFr from '../data/quran-fr.json';
 import { useTheme } from '../ThemeContext';
 import { useI18n } from '../i18n';
 import { RADIUS, SHADOWS } from '../theme';
@@ -42,9 +45,26 @@ function SurahRow({ surah, onPress, styles, colors, t }) {
 function SurahReader({ surah, onBack }) {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
-  const { t, isRTL } = useI18n();
+  const { t, isRTL, language } = useI18n();
   const styles = useMemo(() => createStyles(colors, isRTL), [colors, isRTL]);
   const [fontSize, setFontSize] = useState(27);
+  const [transLang, setTransLang] = useState(
+    language === 'fr' ? 'fr' : language === 'en' ? 'en' : 'ar'
+  );
+  const [audioOpen, setAudioOpen] = useState(false);
+  const [audioIndex, setAudioIndex] = useState(0);
+
+  const globalNumbers = useMemo(() => {
+    const start = quran.chapters
+      .slice(0, surah.number - 1)
+      .reduce((sum, chapter) => sum + chapter.versesCount, 0) + 1;
+    return surah.verses.map((_, i) => start + i);
+  }, [surah]);
+
+  const openAudio = (index = 0) => {
+    setAudioIndex(index);
+    setAudioOpen(true);
+  };
 
   useEffect(() => {
     if (Platform.OS !== 'android') return undefined;
@@ -96,6 +116,55 @@ function SurahReader({ surah, onBack }) {
         </Text>
       </View>
 
+      <View style={styles.readerTools}>
+        <View style={styles.langRow}>
+          <Text style={styles.langLabel}>{t('quran.translation')}:</Text>
+          {[
+            { key: 'ar', label: t('quran.langAr') },
+            { key: 'en', label: t('quran.langEn') },
+            { key: 'fr', label: t('quran.langFr') },
+          ].map((item) => (
+            <Pressable
+              key={item.key}
+              onPress={() => setTransLang(item.key)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: transLang === item.key }}
+              style={({ pressed }) => [
+                styles.langChip,
+                transLang === item.key && styles.langChipActive,
+                pressed && styles.pressed,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.langChipText,
+                  transLang === item.key && styles.langChipTextActive,
+                ]}
+              >
+                {item.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        <Pressable
+          onPress={() => openAudio(0)}
+          accessibilityRole="button"
+          accessibilityLabel={t('quran.audioOpen')}
+          style={({ pressed }) => [styles.audioButton, pressed && styles.pressed]}
+        >
+          <MaterialCommunityIcons name="headphones" size={17} color={colors.background} />
+          <Text style={styles.audioButtonText}>{t('quran.audio')}</Text>
+        </Pressable>
+      </View>
+
+      {audioOpen ? (
+        <QuranAudioPlayer
+          globalNumbers={globalNumbers}
+          startIndex={audioIndex}
+          onClose={() => setAudioOpen(false)}
+        />
+      ) : null}
+
       {surah.bismillahPre ? (
         <Text
           style={[
@@ -124,19 +193,40 @@ function SurahReader({ surah, onBack }) {
       showsVerticalScrollIndicator={false}
       initialNumToRender={12}
       windowSize={9}
-      renderItem={({ item, index }) => (
-        <View style={[styles.ayahRow, index % 2 === 1 && styles.ayahRowAlt]}>
-          <View style={styles.ayahNumber}>
-            <Text style={styles.ayahNumberText}>{index + 1}</Text>
+      renderItem={({ item, index }) => {
+        const translation =
+          transLang === 'en'
+            ? quranEn[surah.number - 1]?.[index]
+            : transLang === 'fr'
+            ? quranFr[surah.number - 1]?.[index]
+            : null;
+        return (
+          <View style={[styles.ayahRow, index % 2 === 1 && styles.ayahRowAlt]}>
+            <View style={styles.ayahMetaRow}>
+              <Pressable
+                onPress={() => openAudio(index)}
+                accessibilityRole="button"
+                accessibilityLabel={t('quran.audioOpen')}
+                style={({ pressed }) => [styles.ayahPlay, pressed && styles.pressed]}
+              >
+                <MaterialCommunityIcons name="play-circle-outline" size={19} color={colors.primary} />
+              </Pressable>
+              <View style={styles.ayahNumber}>
+                <Text style={styles.ayahNumberText}>{index + 1}</Text>
+              </View>
+            </View>
+            <Text
+              selectable
+              style={[styles.ayahText, { fontSize, lineHeight: Math.round(fontSize * 2.45) }]}
+            >
+              {item.text}
+            </Text>
+            {translation ? (
+              <Text style={styles.ayahTranslation}>{translation}</Text>
+            ) : null}
           </View>
-          <Text
-            selectable
-            style={[styles.ayahText, { fontSize, lineHeight: Math.round(fontSize * 2.45) }]}
-          >
-            {item.text}
-          </Text>
-        </View>
-      )}
+        );
+      }}
       ListFooterComponent={
         <View style={styles.readerFooter}>
           <MaterialCommunityIcons name="shield-check-outline" size={16} color={colors.primary} />
@@ -539,6 +629,81 @@ const createStyles = (colors, isRTL) =>
       fontSize: 11,
       textAlign: 'center',
     },
+    readerTools: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 8,
+      marginBottom: 14,
+      flexWrap: 'wrap',
+    },
+    langRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      flexWrap: 'wrap',
+    },
+    langLabel: {
+      color: colors.textMuted,
+      fontSize: 10,
+      fontWeight: '700',
+      marginRight: 2,
+    },
+    langChip: {
+      paddingHorizontal: 9,
+      paddingVertical: 6,
+      borderRadius: RADIUS.pill,
+      backgroundColor: colors.surfaceSoft,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    langChipActive: {
+      backgroundColor: colors.primarySoft,
+      borderColor: colors.primary,
+    },
+    langChipText: {
+      color: colors.textMuted,
+      fontSize: 10,
+      fontWeight: '700',
+    },
+    langChipTextActive: {
+      color: colors.primary,
+    },
+    audioButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: RADIUS.pill,
+      backgroundColor: colors.primary,
+    },
+    audioButtonText: {
+      color: colors.background,
+      fontSize: 11,
+      fontWeight: '800',
+    },
+    ayahMetaRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 6,
+    },
+    ayahPlay: {
+      width: 30,
+      height: 30,
+      borderRadius: 15,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    ayahTranslation: {
+      color: colors.textMuted,
+      fontSize: 14,
+      lineHeight: 22,
+      textAlign: isRTL ? 'right' : 'left',
+      marginTop: 8,
+      paddingHorizontal: 2,
+    },
     bismillah: {
       color: colors.gold,
       fontFamily: 'AmiriQuran',
@@ -566,7 +731,7 @@ const createStyles = (colors, isRTL) =>
       borderColor: colors.border,
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: 6,
+      marginBottom: 0,
     },
     ayahNumberText: {
       color: colors.gold,
