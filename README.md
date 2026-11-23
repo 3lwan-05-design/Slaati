@@ -16,11 +16,20 @@
   <img alt="Stack" src="https://img.shields.io/badge/Expo-React%20Native-Electron-6c5ce7?style=flat-square" />
 </p>
 
-## 🎬 Vidéo d'annonce / فيديو تعريفي
+## 🎬 Vidéos / فيديوهات
+
+**فيديو النشر — حماسي بموسيقى (30 ثانية / MP4):**
+
+<p align="center">
+  <video src="docs/slati-pro-publication.mp4" controls width="360"></video><br />
+  <a href="docs/slati-pro-publication.mp4">▶ تحميل فيديو النشر / Download the publication video</a>
+</p>
+
+**فيديو تعريفي هادئ — بلا موسيقى (24 ثانية / WebM):**
 
 <p align="center">
   <video src="docs/slati-pro-promo.webm" controls width="360"></video><br />
-  <a href="docs/slati-pro-promo.webm">▶ تحميل الفيديو / Download the video</a>
+  <a href="docs/slati-pro-promo.webm">▶ تحميل الفيديو التعريفي / Download the promo video</a>
 </p>
 
 ---
