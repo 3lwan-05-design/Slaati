@@ -2,8 +2,8 @@
   <img src="assets/images/icon.png" alt="Slati Pro" width="120" />
 </p>
 
-<h1 align="center">Slati Pro
-p/ From the developer ELASSAL ALAE </h1>
+<h1 align="center">Slati Pro </h1>
+<h1 align="center"> From the developer -ELASSAL ALAE- </h1 >
 
 <p align="center">
   <strong>تطبيق إسلامي عصري — أوقات الصلاة، القرآن، القبلة، التعلّم، الألعاب ومساعد ذكي</strong><br />
