@@ -1,9 +1,12 @@
+
 <p align="center">
   <img src="assets/images/icon.png" alt="Slati Pro" width="120" />
 </p>
 
 <h1 align="center">Slati Pro </h1>
 <h1 align="center"> From the developer <br />_ELASSAL ALAE_ </h1 >
+<h1 align="center"> INSTAGRAM <br /> 
+@tkd___alae.cn & @3lwan.05 
 
 <p align="center">
   <strong>تطبيق إسلامي عصري — أوقات الصلاة، القرآن، القبلة، التعلّم، الألعاب ومساعد ذكي</strong><br />
@@ -11,7 +14,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.0.0-14b8a6?style=flat-square" />
+  <img alt="Version" src="https://img.shields.io/badge/version-1.0.0-14b8a6?st wwwyle=flat-square" />
   <img alt="Android" src="https://img.shields.io/badge/Android-arm64--v8a-3ddc84?style=flat-square" />
   <img alt="Windows" src="https://img.shields.io/badge/Windows-x64-0078d4?style=flat-square" />
   <img alt="Stack" src="https://img.shields.io/badge/Expo-React%20Native-Electron-6c5ce7?style=flat-square" />
