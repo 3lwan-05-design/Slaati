@@ -11,10 +11,10 @@ import { createAudioPlayer, setAudioModeAsync } from 'expo-audio';
 import { useTheme } from '../ThemeContext';
 import { useI18n } from '../i18n';
 import { RADIUS, SHADOWS } from '../theme';
+import { initAudioCache, sourceFor, ensureCached, isCached } from '../utils/audioCache';
 
 // One reciter for every ayah, so the voice never changes between surahs.
-const AUDIO_BASE = 'https://cdn.islamic.network/quran/audio/128/ar.alafasy/';
-const audioUrl = (globalNumber) => `${AUDIO_BASE}${globalNumber}.mp3`;
+const RECITER = 'ar.alafasy';
 
 export default function QuranAudioPlayer({ globalNumbers, startIndex, onClose }) {
   const { colors } = useTheme();
@@ -32,6 +32,7 @@ export default function QuranAudioPlayer({ globalNumbers, startIndex, onClose })
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    initAudioCache().catch(() => {});
     let player;
     try {
       player = createAudioPlayer(null, { updateInterval: 250 });
@@ -49,7 +50,9 @@ export default function QuranAudioPlayer({ globalNumbers, startIndex, onClose })
       setProgress(0);
       setError(false);
       try {
-        player.replace(audioUrl(globalNumbers[next]));
+        const global = globalNumbers[next];
+        player.replace(sourceFor(RECITER, global));
+        if (!isCached(RECITER, global)) ensureCached(RECITER, global).catch(() => {});
         player.play();
         setPlaying(true);
       } catch (e) {
@@ -95,7 +98,11 @@ export default function QuranAudioPlayer({ globalNumbers, startIndex, onClose })
         player.pause();
         setPlaying(false);
       } else {
-        if (player.isLoaded === false) player.replace(audioUrl(globalNumbers[indexRef.current]));
+        if (player.isLoaded === false) {
+          const global = globalNumbers[indexRef.current];
+          player.replace(sourceFor(RECITER, global));
+          if (!isCached(RECITER, global)) ensureCached(RECITER, global).catch(() => {});
+        }
         player.play();
         setPlaying(true);
         setError(false);

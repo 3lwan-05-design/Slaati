@@ -14,6 +14,16 @@ import quran from '../data/quran.json';
 import { useTheme } from '../ThemeContext';
 import { useI18n } from '../i18n';
 import { RADIUS, SHADOWS } from '../theme';
+import {
+  initAudioCache,
+  sourceFor,
+  ensureCached,
+  isCached,
+  cacheSurah,
+  isSurahCached,
+  cacheSizeMb,
+  clearAudioCache,
+} from '../utils/audioCache';
 
 const RECITERS = [
   { id: 'ar.alafasy', name: 'Mishary Alafasy' },
@@ -23,9 +33,6 @@ const RECITERS = [
 
 const globalStart = (number) =>
   quran.chapters.slice(0, number - 1).reduce((sum, c) => sum + c.versesCount, 0) + 1;
-
-const audioUrl = (reciter, global) =>
-  `https://cdn.islamic.network/quran/audio/128/${reciter}/${global}.mp3`;
 
 export default function FullSurahAudio() {
   const { colors } = useTheme();
@@ -40,6 +47,9 @@ export default function FullSurahAudio() {
   const [loading, setLoading] = useState(false);
   const [complete, setComplete] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [downloaded, setDownloaded] = useState({});
+  const [downloading, setDownloading] = useState({});
+  const [cacheMb, setCacheMb] = useState(0);
 
   const playerRef = useRef(null);
   const surahRef = useRef(null);
@@ -63,6 +73,15 @@ export default function FullSurahAudio() {
   }, [query]);
 
   useEffect(() => {
+    initAudioCache().then(() => {
+      quran.chapters.forEach((chapter) => {
+        const start = globalStart(chapter.number);
+        isSurahCached(reciter, chapter.versesCount, start).then((yes) => {
+          if (yes) setDownloaded((prev) => ({ ...prev, [chapter.number]: true }));
+        });
+      });
+    }).catch(() => {});
+
     const player = createAudioPlayer(null, { updateInterval: 250 });
     playerRef.current = player;
     setAudioModeAsync({ playsInSilentMode: true }).catch(() => {});
@@ -76,7 +95,10 @@ export default function FullSurahAudio() {
       setComplete(false);
       setProgress(0);
       try {
-        p.replace({ uri: audioUrl(reciterRef.current, global) });
+        p.replace(sourceFor(reciterRef.current, global));
+        if (!isCached(reciterRef.current, global)) {
+          ensureCached(reciterRef.current, global).catch(() => {});
+        }
         p.play();
         setPlaying(true);
       } catch (e) {
@@ -154,6 +176,36 @@ export default function FullSurahAudio() {
     setProgress(0);
   };
 
+  const refreshCacheSize = () => {
+    cacheSizeMb().then(setCacheMb).catch(() => {});
+  };
+  useEffect(() => { refreshCacheSize(); }, [downloaded]);
+
+  const downloadSurah = async (number) => {
+    const chapter = quran.chapters[number - 1];
+    if (!chapter || downloading[number]) return;
+    setDownloading((prev) => ({ ...prev, [number]: 0 }));
+    const start = globalStart(number);
+    try {
+      await cacheSurah(reciter, number, chapter.versesCount, start, (done, total) => {
+        setDownloading((prev) => ({ ...prev, [number]: Math.round((done / total) * 100) }));
+      });
+      setDownloaded((prev) => ({ ...prev, [number]: true }));
+    } catch (e) {}
+    setDownloading((prev) => {
+      const next = { ...prev };
+      delete next[number];
+      return next;
+    });
+    refreshCacheSize();
+  };
+
+  const clearCache = async () => {
+    await clearAudioCache();
+    setDownloaded({});
+    setCacheMb(0);
+  };
+
   const surah = currentSurah ? quran.chapters[currentSurah - 1] : null;
   const surahName = surah
     ? language === 'ar' ? surah.nameArabic : surah.nameSimple
@@ -188,6 +240,16 @@ export default function FullSurahAudio() {
             </Text>
           </Pressable>
         ))}
+      </View>
+
+      <View style={styles.offlineRow}>
+        <MaterialCommunityIcons name="download-circle-outline" size={15} color={colors.primary} />
+        <Text style={styles.offlineText}>
+          {t('quran.offline')} · {t('quran.savedMb', { mb: cacheMb })}
+        </Text>
+        <Pressable onPress={clearCache} style={({ pressed }) => [styles.clearBtn, pressed && styles.pressed]}>
+          <Text style={styles.clearBtnText}>{t('quran.clearCache')}</Text>
+        </Pressable>
       </View>
 
       {surah ? (
@@ -260,28 +322,47 @@ export default function FullSurahAudio() {
       initialNumToRender={14}
       renderItem={({ item }) => {
         const active = currentSurah === item.number;
+        const pct = downloading[item.number];
+        const isDownloaded = downloaded[item.number];
         return (
-          <Pressable
-            onPress={() => startSurah(item.number)}
-            style={({ pressed }) => [styles.row, active && styles.rowActive, pressed && styles.pressed]}
-          >
-            <View style={styles.numberBadge}>
-              <Text style={styles.numberText}>{item.number}</Text>
-            </View>
-            <View style={styles.rowCopy}>
-              <Text style={styles.rowName}>
-                {language === 'ar' ? item.nameArabic : item.nameSimple}
-              </Text>
-              <Text style={styles.rowMeta} numberOfLines={1}>
-                {t('quran.ayahs', { count: item.versesCount })} · {item.translation}
-              </Text>
-            </View>
-            {active && playing ? (
-              <MaterialCommunityIcons name="volume-high" size={18} color={colors.primary} />
-            ) : (
-              <MaterialCommunityIcons name="play-circle-outline" size={20} color={colors.textMuted} />
-            )}
-          </Pressable>
+          <View style={[styles.row, active && styles.rowActive]}>
+            <Pressable
+              onPress={() => startSurah(item.number)}
+              accessibilityRole="button"
+              style={({ pressed }) => [styles.rowMain, pressed && styles.pressed]}
+            >
+              <View style={styles.numberBadge}>
+                <Text style={styles.numberText}>{item.number}</Text>
+              </View>
+              <View style={styles.rowCopy}>
+                <Text style={styles.rowName}>
+                  {language === 'ar' ? item.nameArabic : item.nameSimple}
+                </Text>
+                <Text style={styles.rowMeta} numberOfLines={1}>
+                  {t('quran.ayahs', { count: item.versesCount })} · {item.translation}
+                </Text>
+              </View>
+              {active && playing ? (
+                <MaterialCommunityIcons name="volume-high" size={18} color={colors.primary} />
+              ) : (
+                <MaterialCommunityIcons name="play-circle-outline" size={20} color={colors.textMuted} />
+              )}
+            </Pressable>
+            <Pressable
+              onPress={() => downloadSurah(item.number)}
+              accessibilityRole="button"
+              accessibilityLabel={t('quran.download')}
+              style={({ pressed }) => [styles.downloadBtn, pressed && styles.pressed]}
+            >
+              {pct !== undefined ? (
+                <Text style={styles.downloadPct}>{pct}%</Text>
+              ) : isDownloaded ? (
+                <MaterialCommunityIcons name="check-circle" size={21} color={colors.primary} />
+              ) : (
+                <MaterialCommunityIcons name="download-outline" size={20} color={colors.textMuted} />
+              )}
+            </Pressable>
+          </View>
         );
       }}
     />
@@ -327,6 +408,16 @@ const createStyles = (colors, isRTL) =>
     },
     reciterText: { color: colors.textMuted, fontSize: 10, fontWeight: '700' },
     reciterTextActive: { color: colors.primary },
+    offlineRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      marginBottom: 14,
+      flexWrap: 'wrap',
+    },
+    offlineText: { color: colors.textMuted, fontSize: 10, fontWeight: '700', flex: 1 },
+    clearBtn: { paddingHorizontal: 8, paddingVertical: 5, borderRadius: RADIUS.pill, backgroundColor: colors.surfaceSoft },
+    clearBtnText: { color: colors.textMuted, fontSize: 9, fontWeight: '700' },
     player: {
       backgroundColor: colors.surface,
       borderWidth: 1,
@@ -401,6 +492,16 @@ const createStyles = (colors, isRTL) =>
       marginBottom: 8,
     },
     rowActive: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
+    rowMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 },
+    downloadBtn: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.surfaceSoft,
+    },
+    downloadPct: { color: colors.primary, fontSize: 9, fontWeight: '800' },
     numberBadge: {
       width: 38,
       height: 38,
