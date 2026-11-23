@@ -14,6 +14,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import ScreenBackground from '../components/ScreenBackground';
 import ThemeToggle from '../components/ThemeToggle';
 import QuranAudioPlayer from '../components/QuranAudioPlayer';
+import FullSurahAudio from '../components/FullSurahAudio';
 import quran from '../data/quran.json';
 import quranEn from '../data/quran-en.json';
 import quranFr from '../data/quran-fr.json';
@@ -249,6 +250,7 @@ export default function QuranScreen() {
   const styles = useMemo(() => createStyles(colors, isRTL), [colors, isRTL]);
   const [query, setQuery] = useState('');
   const [selectedNumber, setSelectedNumber] = useState(null);
+  const [mode, setMode] = useState('read');
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -338,33 +340,101 @@ export default function QuranScreen() {
 
   return (
     <ScreenBackground>
-      <FlatList
-        data={filtered}
-        keyExtractor={(item) => String(item.number)}
-        ListHeaderComponent={header}
-        contentContainerStyle={[
-          styles.content,
-          { paddingTop: Math.max(insets.top, 18) + 6 },
-        ]}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        initialNumToRender={14}
-        renderItem={({ item }) => (
-          <SurahRow
-            surah={item}
-            onPress={() => setSelectedNumber(item.number)}
-            styles={styles}
-            colors={colors}
-            t={t}
-          />
-        )}
-      />
+      <View style={[styles.modeBar, { paddingTop: Math.max(insets.top, 18) + 6 }]}>
+        {[
+          { key: 'read', label: t('quran.readMode'), icon: 'book-open-page-variant' },
+          { key: 'audio', label: t('quran.audioMode'), icon: 'headphones' },
+        ].map((item) => (
+          <Pressable
+            key={item.key}
+            onPress={() => setMode(item.key)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: mode === item.key }}
+            style={({ pressed }) => [
+              styles.modeChip,
+              mode === item.key && styles.modeChipActive,
+              pressed && styles.pressed,
+            ]}
+          >
+            <MaterialCommunityIcons
+              name={item.icon}
+              size={16}
+              color={mode === item.key ? colors.background : colors.textMuted}
+            />
+            <Text
+              style={[
+                styles.modeChipText,
+                mode === item.key && styles.modeChipTextActive,
+              ]}
+            >
+              {item.label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+      {mode === 'audio' ? (
+        <View style={styles.audioModeWrap}>
+          <FullSurahAudio />
+        </View>
+      ) : (
+        <FlatList
+          data={filtered}
+          keyExtractor={(item) => String(item.number)}
+          ListHeaderComponent={header}
+          contentContainerStyle={[styles.content, { paddingTop: 10 }]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          initialNumToRender={14}
+          renderItem={({ item }) => (
+            <SurahRow
+              surah={item}
+              onPress={() => setSelectedNumber(item.number)}
+              styles={styles}
+              colors={colors}
+              t={t}
+            />
+          )}
+        />
+      )}
     </ScreenBackground>
   );
 }
 
 const createStyles = (colors, isRTL) =>
   StyleSheet.create({
+    modeBar: {
+      flexDirection: 'row',
+      gap: 8,
+      paddingHorizontal: 18,
+      paddingBottom: 12,
+    },
+    modeChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingHorizontal: 14,
+      paddingVertical: 9,
+      borderRadius: RADIUS.pill,
+      backgroundColor: colors.surfaceSoft,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    modeChipActive: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    modeChipText: {
+      color: colors.textMuted,
+      fontSize: 12,
+      fontWeight: '800',
+    },
+    modeChipTextActive: {
+      color: colors.background,
+    },
+    audioModeWrap: {
+      flex: 1,
+      minHeight: 0,
+    },
     content: {
       paddingHorizontal: 18,
       paddingBottom: 32,
