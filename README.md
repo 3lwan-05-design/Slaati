@@ -25,7 +25,7 @@
 **فيديو النشر — حماسي بموسيقى (30 ثانية / MP4):**
 
 <p align="center">
-  <video src="docs/slati-pro-publication.mp4" controls width="360"></video><br />
+  <video src="docs/slati-pro-promo.webm" controls width="360"></video><br />
   <a href="docs/slati-pro-publication.mp4">▶ تحميل فيديو النشر / Download the publication video</a>
 </p>
 
