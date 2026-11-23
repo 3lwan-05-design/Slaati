@@ -138,4 +138,4 @@ release/                   built APK / EXE (not committed to git)
 
 ---
 
-<p align="center">صُنع بـ ♥ · Made with ♥ for the Moroccan Muslim community.</p>
+<p align="center">صُنع بـ ♥ · Made with ♥ for the Moroccan Muslim community and project 100% mghribin.</p>
