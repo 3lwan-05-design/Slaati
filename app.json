@@ -2,7 +2,7 @@
   "expo": {
     "name": "Slati Pro",
     "slug": "slati",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0d1b2a",
@@ -10,7 +10,7 @@
     "scheme": "slati",
     "ios": {
       "bundleIdentifier": "app.slati.free",
-      "buildNumber": "1",
+      "buildNumber": "2",
       "supportsTablet": false,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Slati Pro uses your location to calculate prayer times and the Qibla direction.",
@@ -19,6 +19,7 @@
     },
     "android": {
       "package": "app.slati.free",
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#0d1b2a"
