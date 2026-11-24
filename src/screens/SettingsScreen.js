@@ -38,6 +38,7 @@ import {
 import { useTheme } from '../ThemeContext';
 import { useI18n, translate, LANGUAGES } from '../i18n';
 import { RADIUS, SHADOWS } from '../theme';
+import appConfig from '../../app.json';
 
 function OptionRow({ label, selected, onPress, styles, colors }) {
   return (
@@ -833,7 +834,9 @@ export default function SettingsScreen() {
               <Text style={styles.aboutTitle}>Slati</Text>
               <Text style={styles.aboutText}>{t('settings.aboutText')}</Text>
             </View>
-            <Text style={styles.version}>{t('settings.version', { version: '1.0.0' })}</Text>
+            <Text style={styles.version}>
+              {t('settings.version', { version: appConfig.expo.version })}
+            </Text>
           </View>
           <View style={styles.aboutDivider} />
           <View style={styles.aboutRow}>
