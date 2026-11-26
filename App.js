@@ -17,6 +17,7 @@ import { AuthProvider, useAuth } from './src/AuthContext';
 import { configureNotifications } from './src/notifications';
 import { useTheme } from './src/ThemeContext';
 import { useI18n } from './src/i18n';
+import InstallPrompt from './src/components/InstallPrompt';
 import PrayerTimesScreen from './src/screens/PrayerTimesScreen';
 import QuranScreen from './src/screens/QuranScreen';
 import LearnScreen from './src/screens/LearnScreen';
@@ -272,6 +273,7 @@ function AppShell() {
           <AuthScreen />
         </View>
       ) : null}
+      <InstallPrompt />
       <StatusBar hidden />
     </View>
     </React.Suspense>
